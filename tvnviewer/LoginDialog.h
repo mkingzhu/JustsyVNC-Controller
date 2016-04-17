@@ -62,15 +62,19 @@ public:
   // this constant will be returned if user have pressed 'Listening' button
   static const int LISTENING_MODE = 2;
 
+  void setEnable(bool enable);
+
 protected:
   BOOL onInitDialog();
   BOOL onCommand(UINT controlID, UINT notificationID);
   bool m_isListening;
+  bool m_enable;
 
   Control m_listening;
   Control m_ok;
   ConnectionConfig m_connectionConfig;
   ComboBox m_server;
+  CheckBox m_needConfirm;
   StringStorage m_serverHost;
   TvnViewer *m_viewer;
 

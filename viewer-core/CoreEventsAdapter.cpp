@@ -38,8 +38,9 @@ void CoreEventsAdapter::onCutText(const StringStorage *cutText)
 {
 }
 
-void CoreEventsAdapter::onEstablished()
+BOOL CoreEventsAdapter::onEstablished(RfbInputGate *input, RfbOutputGate *output)
 {
+  return TRUE;
 }
 
 void CoreEventsAdapter::onConnected(RfbOutputGate *output)

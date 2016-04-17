@@ -25,6 +25,7 @@
 #include "TvnViewer.h"
 #include "network/socket/WindowsSocket.h"
 #include "util/ResourceLoader.h"
+#include "util/AnsiStringStorage.h"
 #include "resource.h"
 
 TvnViewer::TvnViewer(HINSTANCE appInstance, const TCHAR *windowClassName,
@@ -62,6 +63,39 @@ TvnViewer::~TvnViewer()
 
   m_logWriter.info(_T("Shutdown WinSock"));
   WindowsSocket::cleanup();
+}
+
+void TvnViewer::setUser(const StringStorage &user)
+{
+  m_user.setString(user.getString());
+}
+
+StringStorage TvnViewer::getUser() const
+{
+  StringStorage user(m_user);
+  return user;
+}
+
+void TvnViewer::setDeviceId(const StringStorage &deviceId)
+{
+  m_deviceId.setString(deviceId.getString());
+}
+
+StringStorage TvnViewer::getDeviceId() const
+{
+  StringStorage deviceId(m_deviceId);
+  return deviceId;
+}
+
+void TvnViewer::setMagic(const StringStorage &magic)
+{
+  m_magic.setString(magic.getString());
+}
+
+StringStorage TvnViewer::getMagic() const
+{
+  StringStorage magic(m_magic);
+  return magic;
 }
 
 void TvnViewer::startListeningServer(const int listeningPort)
@@ -153,10 +187,27 @@ bool TvnViewer::isVisibleLoginDialog() const
   return !!m_loginDialog->getControl()->getWindow();
 }
 
-void TvnViewer::newConnection(const StringStorage *hostName, const ConnectionConfig *config)
+void TvnViewer::newConnection(const StringStorage *hostName, BOOL needConfirm, const ConnectionConfig *config)
 {
+  AnsiStringStorage host(hostName);
+  if (inet_addr(host.getString()) == INADDR_NONE) {
+    struct hostent *remoteHost = gethostbyname(host.getString());
+    if (remoteHost) {
+      struct in_addr addr;
+      addr.s_addr = *(u_long*)remoteHost->h_addr_list[0];
+      host.setString(inet_ntoa(addr));
+    }
+  }
+
+  StringStorage realHostName;
+  host.toStringStorage(&realHostName);
+
   ConnectionData *conData = new ConnectionData;
-  conData->setHost(hostName);
+  conData->setHost(&realHostName);
+  conData->setUser(m_user);
+  conData->setDeviceId(m_deviceId);
+  conData->setMagic(m_magic);
+  conData->setNeedConfirm(needConfirm);
   runInstance(conData, config);
 }
 
@@ -250,6 +301,31 @@ void TvnViewer::showConfiguration()
 {
   m_configurationDialog.show();
   addModelessDialog(m_configurationDialog.getControl()->getWindow());
+}
+
+void TvnViewer::willConnect()
+{
+  m_loginDialog->setEnable(false);
+}
+
+void TvnViewer::didConnect()
+{
+  m_loginDialog->kill(0);
+}
+
+void TvnViewer::notConfirm()
+{
+  m_loginDialog->setEnable(true);
+
+  MessageBox(0,
+             _T("用户未确认"),
+             ProductNames::VIEWER_PRODUCT_NAME,
+             MB_OK | MB_ICONERROR);
+}
+
+void TvnViewer::didError()
+{
+  m_loginDialog->setEnable(true);
 }
 
 void TvnViewer::showAboutViewer()
@@ -358,6 +434,21 @@ LRESULT CALLBACK TvnViewer::wndProc(HWND hWnd, UINT msg, WPARAM wparam, LPARAM l
       case WM_USER_CONFIGURATION_RELOAD:
         _this->restartListeningServer();
         break;
+
+      case WM_USER_WILL_CONNECT_SERVER:
+        _this->willConnect();
+        break;
+
+      case WM_USER_DID_CONNECT_SERVER:
+        _this->didConnect();
+        break;
+
+      case WM_USER_NOT_CONFIRM:
+        _this->notConfirm();
+        break;
+
+      case WM_USER_ERROR:
+        _this->didError();
       }
     }
     return true;

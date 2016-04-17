@@ -31,7 +31,8 @@
 LoginDialog::LoginDialog(TvnViewer *viewer)
 : BaseDialog(IDD_LOGINDIALOG),
   m_viewer(viewer),
-  m_isListening(false)
+  m_isListening(false),
+  m_enable(true)
 {
 }
 
@@ -42,6 +43,8 @@ LoginDialog::~LoginDialog()
 BOOL LoginDialog::onInitDialog()
 {
   setControlById(m_server, IDC_CSERVER);
+  m_server.setText(_T("mdm.jh"));
+  setControlById(m_needConfirm, IDC_NEED_CONFIRM);
   setControlById(m_listening, IDC_LISTENING);
   setControlById(m_ok, IDOK);
   updateHistory();
@@ -53,8 +56,19 @@ BOOL LoginDialog::onInitDialog()
   return TRUE;
 }
 
+void LoginDialog::setEnable(bool enable)
+{
+  m_enable = enable;
+  m_ok.setEnabled(enable);
+  m_server.setEnabled(enable);
+  m_needConfirm.setEnabled(enable);
+}
+
 void LoginDialog::enableConnect()
 {
+  if (!m_enable)
+    return;
+
   StringStorage str;
   int iSelected = m_server.getSelectedItemIndex();
   if (iSelected == -1) {
@@ -95,6 +109,7 @@ void LoginDialog::onConnect()
   ConnectionHistory *conHistory = ViewerConfig::getInstance()->getConnectionHistory();
 
   m_server.getText(&m_serverHost);
+  BOOL need_confirm = m_needConfirm.isChecked();
 
   conHistory->load();
   conHistory->addHost(m_serverHost.getString());
@@ -105,7 +120,7 @@ void LoginDialog::onConnect()
     m_connectionConfig.saveToStorage(&ccsm);
   }
 
-  m_viewer->newConnection(&m_serverHost, &m_connectionConfig);
+  m_viewer->newConnection(&m_serverHost, need_confirm, &m_connectionConfig);
 }
 
 void LoginDialog::onConfiguration()
@@ -209,7 +224,6 @@ BOOL LoginDialog::onCommand(UINT controlID, UINT notificationID)
   // click "Connect"
   case IDOK:
     onConnect();
-    kill(0);
     break;
 
   // cancel connection

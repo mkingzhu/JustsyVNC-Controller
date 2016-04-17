@@ -480,19 +480,13 @@ PixelFormat RemoteViewerCore::readPixelFormat()
   return pixelFormat;
 }
 
-void RemoteViewerCore::connectToHost()
+BOOL RemoteViewerCore::connectToHost()
 {
   m_tcpConnection.connect();
   m_input = m_tcpConnection.getInput();
   m_output = m_tcpConnection.getOutput();
   m_logWriter.detail(_T("Connection is established"));
-  try {
-    m_adapter->onEstablished();
-  } catch (const Exception &ex) {
-    m_logWriter.error(_T("Error in CoreEventsAdapter::onEstablished(): %s"), ex.getMessage());
-  } catch (...) {
-    m_logWriter.error(_T("Unknown error in CoreEventsAdapter::onEstablished()"));
-  }
+  return m_adapter->onEstablished(m_input, m_output);
 }
 
 void RemoteViewerCore::authenticate()
@@ -771,7 +765,8 @@ void RemoteViewerCore::execute()
     // connect to host and create RfbInputGate/RfbOutputGate
     // if already connected, then function do nothing
     m_logWriter.info(_T("Protocol stage is \"Connection establishing\"."));
-    connectToHost();
+    if (!connectToHost())
+      return;
 
     // get server version and set client version
     m_logWriter.info(_T("Protocol stage is \"Handshake\"."));

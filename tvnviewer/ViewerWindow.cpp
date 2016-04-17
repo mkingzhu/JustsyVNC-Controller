@@ -25,6 +25,7 @@
 #include "config-lib/IniFileSettingsManager.h"
 #include "util/Exception.h"
 #include "util/ResourceLoader.h"
+#include "util/AnsiStringStorage.h"
 #include "rfb/StandardPixelFormatFactory.h"
 
 #include "FsWarningDialog.h"
@@ -964,6 +965,8 @@ void ViewerWindow::showWindow()
 
 bool ViewerWindow::onDisconnect()
 {
+  m_application->postMessage(TvnViewer::WM_USER_ERROR);
+
   MessageBox(getHWnd(),
              m_disconnectMessage.getString(),
              formatWindowName().getString(),
@@ -1003,6 +1006,8 @@ bool ViewerWindow::onAuthError(WPARAM wParam)
 
 bool ViewerWindow::onError()
 {
+  m_application->postMessage(TvnViewer::WM_USER_ERROR);
+
   StringStorage error;
   error.format(_T("Error in %s: %s"), ProductNames::VIEWER_PRODUCT_NAME, m_error.getMessage());
   MessageBox(getHWnd(),
@@ -1079,6 +1084,75 @@ Rect ViewerWindow::calculateDefaultSize()
                      (heightDesktop - totalHeight) / 2);
   }
   return defaultRect;
+}
+
+INT32 ViewerWindow::getStatusCode(RfbInputGate *input)
+{
+  INT32 length = input->readInt32();
+  if (8 != length)
+    throw Exception();
+  return input->readInt32();
+}
+
+BOOL ViewerWindow::onEstablished(RfbInputGate *input, RfbOutputGate *output)
+{
+  static AnsiStringStorage header("JUSTSY-VNC-CONTROLLER");
+  static AnsiStringStorage userKey("USER");
+  static AnsiStringStorage deviceIdKey("DEVICE-ID");
+  static AnsiStringStorage magicKey("MAGIC");
+  static AnsiStringStorage needConfirmKey("NEED-CONFIRM");
+
+  AnsiStringStorage user(&(m_conData->getUser()));
+  AnsiStringStorage deviceId(&(m_conData->getDeviceId()));
+  AnsiStringStorage magic(&(m_conData->getMagic()));
+  AnsiStringStorage needConfirm(m_conData->getNeedConfirm() ? "1" : "0");
+
+  INT32 length = sizeof(INT32) + header.getLength()
+    + 2 * sizeof(INT32) + userKey.getLength() + user.getLength()
+    + 2 * sizeof(INT32) + deviceIdKey.getLength() + deviceId.getLength()
+    + 2 * sizeof(INT32) + magicKey.getLength() + magic.getLength()
+    + 2 * sizeof(INT32) + needConfirmKey.getLength() + needConfirm.getLength();
+
+  m_application->postMessage(TvnViewer::WM_USER_WILL_CONNECT_SERVER);
+
+  output->writeInt32(length);
+  output->writeFully(header.getString(), header.getLength());
+
+  output->writeInt32(userKey.getLength());
+  output->writeFully(userKey.getString(), userKey.getLength());
+  output->writeInt32(user.getLength());
+  output->writeFully(user.getString(), user.getLength());
+
+  output->writeInt32(deviceIdKey.getLength());
+  output->writeFully(deviceIdKey.getString(), deviceIdKey.getLength());
+  output->writeInt32(deviceId.getLength());
+  output->writeFully(deviceId.getString(), deviceId.getLength());
+
+  output->writeInt32(magicKey.getLength());
+  output->writeFully(magicKey.getString(), magicKey.getLength());
+  output->writeInt32(magic.getLength());
+  output->writeFully(magic.getString(), magic.getLength());
+
+  output->writeInt32(needConfirmKey.getLength());
+  output->writeFully(needConfirmKey.getString(), needConfirmKey.getLength());
+  output->writeInt32(needConfirm.getLength());
+  output->writeFully(needConfirm.getString(), needConfirm.getLength());
+
+  output->flush();
+
+  INT32 statusCode = getStatusCode(input);
+  if (200 != statusCode)
+    throw Exception();
+
+  statusCode = getStatusCode(input);
+  if (200 != statusCode) {
+    m_stopped = true;
+    m_application->postMessage(TvnViewer::WM_USER_NOT_CONFIRM);
+    return FALSE;
+  } else {
+    m_application->postMessage(TvnViewer::WM_USER_DID_CONNECT_SERVER);
+    return TRUE;
+  }
 }
 
 void ViewerWindow::onConnected(RfbOutputGate *output)

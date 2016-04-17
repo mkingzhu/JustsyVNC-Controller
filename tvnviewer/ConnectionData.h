@@ -34,6 +34,18 @@ public:
   ConnectionData();
   ConnectionData(const ConnectionData &connectionData);
 
+  void setUser(const StringStorage &user);
+  StringStorage getUser() const;
+
+  void setDeviceId(const StringStorage &deviceId);
+  StringStorage getDeviceId() const;
+
+  void setMagic(const StringStorage &magic);
+  StringStorage getMagic() const;
+
+  void setNeedConfirm(const BOOL &needConfirm);
+  BOOL getNeedConfirm() const;
+
   //
   // This methods is setter and getter of hostname or pair of hostname and port.
   //
@@ -69,6 +81,11 @@ public:
   bool isIncoming() const;
 
 protected:
+  StringStorage m_user;
+  StringStorage m_deviceId;
+  StringStorage m_magic;
+  BOOL          m_needConfirm;
+
   HostPath m_hostPath;
 
   // This flag is true, if host isn't set.

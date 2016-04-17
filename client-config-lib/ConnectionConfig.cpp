@@ -32,11 +32,11 @@
 
 ConnectionConfig::ConnectionConfig()
 : m_swapMouse(false), m_viewOnly(false),
-  m_useFullscreen(false), m_use8BitColor(false), m_preferredEncoding(EncodingDefs::TIGHT),
+  m_useFullscreen(false), m_use8BitColor(true), m_preferredEncoding(EncodingDefs::TIGHT),
   m_requestSharedSession(true), m_deiconifyOnRemoteBell(false),
   m_isClipboardEnabled(true),
   m_customCompressionLevel(-1), m_jpegCompressionLevel(6),
-  m_fitWindow(false), m_requestShapeUpdates(true),
+  m_fitWindow(true), m_requestShapeUpdates(true),
   m_ignoreShapeUpdates(false), m_scaleNumerator(1), m_scaleDenominator(1),
   m_localCursor(DOT_CURSOR), m_allowedCopyRect(true)
 {

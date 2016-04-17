@@ -24,18 +24,18 @@
 
 #include "NamingDefs.h"
 
-const TCHAR ProductNames::PRODUCT_NAME[] = _T("TightVNC");
-const TCHAR ProductNames::VIEWER_PRODUCT_NAME[] = _T("TightVNC Viewer");
+const TCHAR ProductNames::PRODUCT_NAME[] = _T("JustsyVNC");
+const TCHAR ProductNames::VIEWER_PRODUCT_NAME[] = _T("JustsyVNC Viewer");
 
-const TCHAR LogNames::VIEWER_LOG_FILE_STUB_NAME[] = _T("tvnviewer");
-const TCHAR LogNames::LOG_DIR_NAME[] = _T("TightVNC");
+const TCHAR LogNames::VIEWER_LOG_FILE_STUB_NAME[] = _T("jvnviewer");
+const TCHAR LogNames::LOG_DIR_NAME[] = _T("JustsyVNC");
 
-const TCHAR RegistryPaths::VIEWER_PATH[] = _T("Software\\TightVNC\\Viewer");
+const TCHAR RegistryPaths::VIEWER_PATH[] = _T("Software\\JustsyVNC\\Viewer");
 
 const TCHAR ApplicationNames::WINDOW_CLASS_NAME[] = 
-  _T("TvnApplicationClass");
+  _T("JvnApplicationClass");
 
-const TCHAR WindowNames::TVN_WINDOW_CLASS_NAME[] = _T("TvnWindowClass");
-const TCHAR WindowNames::TVN_WINDOW_TITLE_NAME[] = _T("TightVNC Viewer");
+const TCHAR WindowNames::TVN_WINDOW_CLASS_NAME[] = _T("JvnWindowClass");
+const TCHAR WindowNames::TVN_WINDOW_TITLE_NAME[] = _T("JustsyVNC Viewer");
 const TCHAR WindowNames::TVN_SUB_WINDOW_TITLE_NAME[] = _T("Viewer");
 

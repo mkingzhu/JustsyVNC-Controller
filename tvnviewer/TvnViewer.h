@@ -51,6 +51,15 @@ public:
             const TCHAR *viewerWindowClassName);
   virtual ~TvnViewer();
 
+  void setUser(const StringStorage &user);
+  StringStorage getUser() const;
+
+  void setDeviceId(const StringStorage &deviceId);
+  StringStorage getDeviceId() const;
+
+  void setMagic(const StringStorage &magic);
+  StringStorage getMagic() const;
+
   //
   // show login dialog
   //
@@ -72,11 +81,16 @@ public:
   //
   void showConfiguration();
 
+  void willConnect();
+  void didConnect();
+  void notConfirm();
+  void didError();
+
   // newConnection(...) and startListening(...) always do copy of params (StringStorage,
   // ConnectionData and ConnectionConfig). After call this function can free memory
   // with hostName, connectionData, connectionConfig
   void newListeningConnection();
-  void newConnection(const StringStorage *hostName, const ConnectionConfig *connectionConfig);
+  void newConnection(const StringStorage *hostName, BOOL needConfirm, const ConnectionConfig *connectionConfig);
   void newConnection(const ConnectionData *conData, const ConnectionConfig *connectionConfig);
   void startListening(int listeningPort);
   void stopListening();
@@ -106,6 +120,11 @@ public:
 
   // This message need send if config is changed.
   static const int WM_USER_CONFIGURATION_RELOAD = WM_USER + 6;
+
+  static const int WM_USER_WILL_CONNECT_SERVER = WM_USER + 7;
+  static const int WM_USER_DID_CONNECT_SERVER = WM_USER + 8;
+  static const int WM_USER_NOT_CONFIRM = WM_USER + 9;
+  static const int WM_USER_ERROR = WM_USER + 10;
 
   // This timer is used for deleting dead instances of viewer.
   static const int TIMER_DELETE_DEAD_INSTANCE = 1;
@@ -137,6 +156,10 @@ protected:
 
 private:
   void addInstance(ViewerInstance *viewerInstance);
+
+  StringStorage m_user;
+  StringStorage m_deviceId;
+  StringStorage m_magic;
 
   bool m_isListening;
   

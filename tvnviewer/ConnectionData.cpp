@@ -38,7 +38,11 @@ ConnectionData::ConnectionData()
 }
 
 ConnectionData::ConnectionData(const ConnectionData &connectionData)
-: m_isEmpty(connectionData.m_isEmpty),
+: m_user(connectionData.getUser()),
+  m_deviceId(connectionData.getDeviceId()),
+  m_magic(connectionData.getMagic()),
+  m_needConfirm(connectionData.getNeedConfirm()),
+  m_isEmpty(connectionData.m_isEmpty),
   m_isSetPassword(connectionData.m_isSetPassword),
   m_isIncoming(connectionData.m_isIncoming)
 {
@@ -48,6 +52,49 @@ ConnectionData::ConnectionData(const ConnectionData &connectionData)
   if (m_isSetPassword) {
     m_defaultPassword = connectionData.m_defaultPassword;
   }
+}
+
+void ConnectionData::setUser(const StringStorage &user)
+{
+  m_user.setString(user.getString());
+}
+
+StringStorage ConnectionData::getUser() const
+{
+  StringStorage user(m_user);
+  return user;
+}
+
+void ConnectionData::setDeviceId(const StringStorage &deviceId)
+{
+  m_deviceId.setString(deviceId.getString());
+}
+
+StringStorage ConnectionData::getDeviceId() const
+{
+  StringStorage deviceId(m_deviceId);
+  return deviceId;
+}
+
+void ConnectionData::setMagic(const StringStorage &magic)
+{
+  m_magic.setString(magic.getString());
+}
+
+StringStorage ConnectionData::getMagic() const
+{
+  StringStorage magic(m_magic);
+  return magic;
+}
+
+void ConnectionData::setNeedConfirm(const BOOL &needConfirm)
+{
+  m_needConfirm = needConfirm;
+}
+
+BOOL ConnectionData::getNeedConfirm() const
+{
+  return m_needConfirm;
 }
 
 void ConnectionData::setIncoming(bool isIncoming)

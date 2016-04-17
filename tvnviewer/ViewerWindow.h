@@ -113,6 +113,7 @@ protected:
   // It is implementation of CoreEventsAdapter functions.
   //
   void onBell();
+  BOOL onEstablished(RfbInputGate *input, RfbOutputGate *output);
   void onConnected(RfbOutputGate *output);
   void onDisconnect(const StringStorage *message);
   void onAuthError(const AuthException *exception);
@@ -195,6 +196,7 @@ private:
   void adjustWindowSize();
   StringStorage formatWindowName() const;
   void updateKeyState();
+  INT32 getStatusCode(RfbInputGate *input);
 
   // onHookProc function implementation of HookEventListener base abstract class.
   virtual LRESULT onHookProc(int code, WPARAM wParam, LPARAM lParam);

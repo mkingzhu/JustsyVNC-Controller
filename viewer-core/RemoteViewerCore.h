@@ -477,7 +477,7 @@ private:
   void receiveSetColorMapEntries();
 
   bool isRfbProtocolString(const char protocol[12]) const;
-  void connectToHost();
+  BOOL connectToHost();
   void handshake();
   int negotiateAboutSecurityType();
   void authenticate();

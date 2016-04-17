@@ -107,6 +107,10 @@ void TcpConnection::connect()
         m_socketOwner = true;
         m_socket->connect(ipAddress);
         m_socket->enableNaggleAlgorithm(false);
+
+        DWORD timeout = 60000;
+        m_socket->setSocketOptions(SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
+        m_socket->setSocketOptions(SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout));
       } else {
         throw Exception(_T("Connection parameters (host, port, socket, gates) is empty."));
       }

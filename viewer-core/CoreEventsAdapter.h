@@ -28,6 +28,7 @@
 #include "io-lib/DataInputStream.h"
 #include "io-lib/DataOutputStream.h"
 #include "io-lib/IOException.h"
+#include "network/RfbInputGate.h"
 #include "network/RfbOutputGate.h"
 #include "rfb/FrameBuffer.h"
 #include "region/Rect.h"
@@ -66,7 +67,7 @@ public:
   //
   // Connection has been established.
   //
-  virtual void onEstablished();
+  virtual BOOL onEstablished(RfbInputGate *input, RfbOutputGate *output);
 
   //
   // Protocol has entered the normal interactive phase (in other words,

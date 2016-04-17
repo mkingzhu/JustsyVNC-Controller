@@ -27,12 +27,28 @@
 #include "TvnViewer.h"
 #include "ConnectionData.h"
 #include "ConnectionListener.h"
-#include "ViewerCmdLine.h"
 #include "util/ResourceLoader.h"
+#include "util/StringStorage.h"
+#include "win-system/WinProcessCommandLine.h"
 
 int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE,
                        LPTSTR lpCmdLine, int nCmdShow)
 {
+  WinProcessCommandLine m_wpcl;
+  if (4 != m_wpcl.getArgumentsCount())
+    return 0;
+
+  bool isOK = true;
+  StringStorage strUser;
+  isOK &= m_wpcl.getArgument(1, &strUser);
+  StringStorage strDeviceId;
+  isOK &= m_wpcl.getArgument(2, &strDeviceId);
+  StringStorage strMagic;
+  isOK &= m_wpcl.getArgument(3, &strMagic);
+
+  if (!isOK)
+    return 0;
+
   ViewerSettingsManager::initInstance(RegistryPaths::VIEWER_PATH);
   SettingsManager *sm = ViewerSettingsManager::getInstance();
 
@@ -53,36 +69,16 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE,
   logWriter.debug(_T("loading settings from storage completed"));
   logWriter.debug(_T("Log initialization completed"));
 
-  ConnectionConfig conConf;
-  ConnectionData condata;
-  bool isListening = false;
-  ViewerCmdLine cmd(&condata, &conConf, &config, &isListening);
-
   int result = 0;
   try {
-    cmd.parse();
     TvnViewer tvnViewer(hInstance,
                         ApplicationNames::WINDOW_CLASS_NAME,
                         WindowNames::TVN_WINDOW_CLASS_NAME);
-    if (isListening) {
-      // FIXME: set listening connection options.
-      tvnViewer.startListening(ConnectionListener::DEFAULT_PORT);
-    } else if (!condata.isEmpty()) {
-      tvnViewer.newConnection(&condata, &conConf);
-    } else {
-      tvnViewer.showLoginDialog();
-    }
+    tvnViewer.setUser(strUser);
+    tvnViewer.setDeviceId(strDeviceId);
+    tvnViewer.setMagic(strMagic);
+    tvnViewer.showLoginDialog();
     result = tvnViewer.run();
-  } catch (const CommandLineFormatException &exception) {
-    StringStorage strError(exception.getMessage());
-    MessageBox(0,
-               strError.getString(),
-               ProductNames::VIEWER_PRODUCT_NAME,
-               MB_OK | MB_ICONERROR);
-    return 0;
-  } catch (const CommandLineFormatHelp &) {
-    cmd.onHelp();
-    return 0;
   } catch (const Exception &ex) {
     MessageBox(0,
                StringTable::getString(IDS_UNKNOWN_ERROR_IN_VIEWER),
